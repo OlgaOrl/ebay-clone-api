@@ -1,0 +1,615 @@
+openapi: 3.0.0
+info:
+  title: eBayClone API (EN)
+  version: "1.0.0"
+  description: |
+    This API allows managing an eBay-like marketplace. All endpoints are documented.
+
+servers:
+  - url: http://localhost:3000
+  - url: https://olga-orlova.me
+tags:
+  - name: "Users"
+    description: "User management"
+  - name: "Sessions"
+    description: "Authentication management"
+  - name: "Listings"
+    description: "Listings management"
+  - name: "Orders"
+    description: "Orders management"
+
+paths:
+  #####################################
+  # USERS
+  #####################################
+  /users:
+    post:
+      tags:
+        - "Users"
+      summary: "Create User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreate"
+      responses:
+        '201':
+          description: "User created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        '400':
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/{id}:
+    get:
+      tags:
+        - "Users"
+      summary: "Get User"
+      parameters:
+        - in: path
+          name: id
+          description: "User ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: "User data"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        '404':
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags:
+        - "Users"
+      summary: "Update User"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        '200':
+          description: "User updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        '400':
+          description: "Bad Request"
+        '404':
+          description: "User not found"
+    delete:
+      tags:
+        - "Users"
+      summary: "Delete User"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          description: "User ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: "User deleted"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        '404':
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  #####################################
+  # SESSIONS
+  #####################################
+  /sessions:
+    post:
+      tags:
+        - "Sessions"
+      summary: "Login"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLogin"
+      responses:
+        '200':
+          description: "Login successful"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "jwt-token-here"
+        '400':
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - "Sessions"
+      summary: "Logout"
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Logout successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        '400':
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  #####################################
+  # LISTINGS
+  #####################################
+  /listings:
+    get:
+      tags:
+        - "Listings"
+      summary: "Get all Listings"
+      parameters:
+        - in: query
+          name: search
+          description: "Search keyword"
+          required: false
+          schema:
+            type: string
+          example: "phone"
+        - in: query
+          name: priceMin
+          description: "Minimum price"
+          required: false
+          schema:
+            type: number
+          example: 50
+        - in: query
+          name: priceMax
+          description: "Maximum price"
+          required: false
+          schema:
+            type: number
+          example: 500
+      responses:
+        '200':
+          description: "List of listings"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Listing"
+    post:
+      tags:
+        - "Listings"
+      summary: "Create Listing"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListingCreate"
+      responses:
+        '201':
+          description: "Listing created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+        '400':
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /listings/{id}:
+    get:
+      tags:
+        - "Listings"
+      summary: "Get Listing"
+      parameters:
+        - in: path
+          name: id
+          description: "Listing ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: "Listing data"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+        '404':
+          description: "Listing not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags:
+        - "Listings"
+      summary: "Update Listing"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListingUpdate"
+      responses:
+        '200':
+          description: "Listing updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+        '400':
+          description: "Bad Request"
+        '404':
+          description: "Listing not found"
+    delete:
+      tags:
+        - "Listings"
+      summary: "Delete Listing"
+      parameters:
+        - in: path
+          name: id
+          description: "Listing ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: "Listing deleted"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        '404':
+          description: "Listing not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  #####################################
+  # ORDERS
+  #####################################
+  /orders:
+    get:
+      tags:
+        - "Orders"
+      summary: "Get all Orders"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: userId
+          description: "Filter by User ID"
+          required: false
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: "List of orders"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+    post:
+      tags:
+        - "Orders"
+      summary: "Create Order"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderCreate"
+      responses:
+        '201':
+          description: "Order created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        '400':
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /orders/{id}:
+    get:
+      tags:
+        - "Orders"
+      summary: "Get Order"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          description: "Order ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: "Order data"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        '404':
+          description: "Order not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags:
+        - "Orders"
+      summary: "Update Order"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderUpdate"
+      responses:
+        '200':
+          description: "Order updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        '400':
+          description: "Bad Request"
+        '404':
+          description: "Order not found"
+    delete:
+      tags:
+        - "Orders"
+      summary: "Delete Order"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          description: "Order ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: "Order deleted"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        '404':
+          description: "Order not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+#####################################
+# Components
+#####################################
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: "user1"
+        email:
+          type: string
+          example: "user1@mail.com"
+    UserCreate:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          example: "user1"
+        email:
+          type: string
+          example: "user1@mail.com"
+        password:
+          type: string
+          example: "secret"
+    UserLogin:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          example: "user1@mail.com"
+        password:
+          type: string
+          example: "secret"
+    UserUpdate:
+      type: object
+      properties:
+        username:
+          type: string
+          example: "updatedUser"
+        email:
+          type: string
+          example: "updated@mail.com"
+        password:
+          type: string
+          example: "newSecret"
+    Listing:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "New item"
+        description:
+          type: string
+          example: "Item description"
+        price:
+          type: number
+          example: 100.0
+    ListingCreate:
+      type: object
+      required:
+        - title
+        - description
+        - price
+      properties:
+        title:
+          type: string
+          example: "New item"
+        description:
+          type: string
+          example: "Item description"
+        price:
+          type: number
+          example: 100.0
+    ListingUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          example: "Updated item"
+        description:
+          type: string
+          example: "Updated description"
+        price:
+          type: number
+          example: 150.0
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 1
+        listingId:
+          type: integer
+          example: 10
+        quantity:
+          type: integer
+          example: 2
+        totalPrice:
+          type: number
+          example: 200.0
+    OrderCreate:
+      type: object
+      required:
+        - userId
+        - listingId
+        - quantity
+        - totalPrice
+      properties:
+        userId:
+          type: integer
+          example: 1
+        listingId:
+          type: integer
+          example: 10
+        quantity:
+          type: integer
+          example: 2
+        totalPrice:
+          type: number
+          example: 200.0
+    OrderUpdate:
+      type: object
+      properties:
+        userId:
+          type: integer
+          example: 2
+        listingId:
+          type: integer
+          example: 20
+        quantity:
+          type: integer
+          example: 5
+        totalPrice:
+          type: number
+          example: 500.0
+    Success:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Operation successful"
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "An error occurred"

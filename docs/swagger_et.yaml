@@ -1,0 +1,616 @@
+openapi: 3.0.0
+info:
+  title: eBayClone API (ET)
+  version: "1.0.0"
+  description: |
+    See API võimaldab hallata eBay sarnast turuplatvormi. Kõik lõpp-punktid on dokumenteeritud.
+
+servers:
+  - url: http://localhost:3000
+  - url: https://olga-orlova.me
+
+tags:
+  - name: "Users"
+    description: "Kasutajate haldus"
+  - name: "Sessions"
+    description: "Autentimise haldus"
+  - name: "Listings"
+    description: "Kuulutuste haldus"
+  - name: "Orders"
+    description: "Tellimuste haldus"
+
+paths:
+  #####################################
+  # USERS
+  #####################################
+  /users:
+    post:
+      tags:
+        - "Users"
+      summary: "Loo kasutaja"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreate"
+      responses:
+        '201':
+          description: "Kasutaja loodud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        '400':
+          description: "Vigane taotlus"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/{id}:
+    get:
+      tags:
+        - "Users"
+      summary: "Hangi kasutaja"
+      parameters:
+        - in: path
+          name: id
+          description: "Kasutaja ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: "Kasutaja andmed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        '404':
+          description: "Kasutajat ei leitud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags:
+        - "Users"
+      summary: "Muuda kasutaja"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        '200':
+          description: "Kasutaja uuendatud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        '400':
+          description: "Vigane taotlus"
+        '404':
+          description: "Kasutajat ei leitud"
+    delete:
+      tags:
+        - "Users"
+      summary: "Kustuta kasutaja"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          description: "Kasutaja ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: "Kasutaja kustutatud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        '404':
+          description: "Kasutajat ei leitud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  #####################################
+  # SESSIONS
+  #####################################
+  /sessions:
+    post:
+      tags:
+        - "Sessions"
+      summary: "Logi sisse"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLogin"
+      responses:
+        '200':
+          description: "Sisselogimine õnnestus"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "jwt-token-here"
+        '400':
+          description: "Vigane taotlus"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - "Sessions"
+      summary: "Logi välja"
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Väljalogimine õnnestus"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        '400':
+          description: "Vigane taotlus"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  #####################################
+  # LISTINGS
+  #####################################
+  /listings:
+    get:
+      tags:
+        - "Listings"
+      summary: "Hangi kõik kuulutused"
+      parameters:
+        - in: query
+          name: search
+          description: "Otsingusõna"
+          required: false
+          schema:
+            type: string
+          example: "phone"
+        - in: query
+          name: priceMin
+          description: "Minimaalne hind"
+          required: false
+          schema:
+            type: number
+          example: 50
+        - in: query
+          name: priceMax
+          description: "Maksimaalne hind"
+          required: false
+          schema:
+            type: number
+          example: 500
+      responses:
+        '200':
+          description: "Kuulutuste loetelu"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Listing"
+    post:
+      tags:
+        - "Listings"
+      summary: "Loo kuulutus"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListingCreate"
+      responses:
+        '201':
+          description: "Kuulutus loodud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+        '400':
+          description: "Vigane taotlus"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /listings/{id}:
+    get:
+      tags:
+        - "Listings"
+      summary: "Hangi kuulutus"
+      parameters:
+        - in: path
+          name: id
+          description: "Kuulutuse ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: "Kuulutuse andmed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+        '404':
+          description: "Kuulutust ei leitud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags:
+        - "Listings"
+      summary: "Muuda kuulutus"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListingUpdate"
+      responses:
+        '200':
+          description: "Kuulutus uuendatud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+        '400':
+          description: "Vigane taotlus"
+        '404':
+          description: "Kuulutust ei leitud"
+    delete:
+      tags:
+        - "Listings"
+      summary: "Kustuta kuulutus"
+      parameters:
+        - in: path
+          name: id
+          description: "Kuulutuse ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: "Kuulutus kustutatud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        '404':
+          description: "Kuulutust ei leitud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  #####################################
+  # ORDERS
+  #####################################
+  /orders:
+    get:
+      tags:
+        - "Orders"
+      summary: "Hangi kõik tellimused"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: userId
+          description: "Filtreeri kasutaja ID järgi"
+          required: false
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: "Tellimuste loetelu"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+    post:
+      tags:
+        - "Orders"
+      summary: "Loo tellimus"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderCreate"
+      responses:
+        '201':
+          description: "Tellimus loodud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        '400':
+          description: "Vigane taotlus"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /orders/{id}:
+    get:
+      tags:
+        - "Orders"
+      summary: "Hangi tellimus"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          description: "Tellimuse ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: "Tellimuse andmed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        '404':
+          description: "Tellimust ei leitud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags:
+        - "Orders"
+      summary: "Muuda tellimus"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderUpdate"
+      responses:
+        '200':
+          description: "Tellimus uuendatud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        '400':
+          description: "Vigane taotlus"
+        '404':
+          description: "Tellimust ei leitud"
+    delete:
+      tags:
+        - "Orders"
+      summary: "Kustuta tellimus"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          description: "Tellimuse ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: "Tellimus kustutatud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        '404':
+          description: "Tellimust ei leitud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+#####################################
+# Components
+#####################################
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: "user1"
+        email:
+          type: string
+          example: "user1@mail.com"
+    UserCreate:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          example: "user1"
+        email:
+          type: string
+          example: "user1@mail.com"
+        password:
+          type: string
+          example: "secret"
+    UserLogin:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          example: "user1@mail.com"
+        password:
+          type: string
+          example: "secret"
+    UserUpdate:
+      type: object
+      properties:
+        username:
+          type: string
+          example: "updatedUser"
+        email:
+          type: string
+          example: "updated@mail.com"
+        password:
+          type: string
+          example: "newSecret"
+    Listing:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "New item"
+        description:
+          type: string
+          example: "Item description"
+        price:
+          type: number
+          example: 100.0
+    ListingCreate:
+      type: object
+      required:
+        - title
+        - description
+        - price
+      properties:
+        title:
+          type: string
+          example: "New item"
+        description:
+          type: string
+          example: "Item description"
+        price:
+          type: number
+          example: 100.0
+    ListingUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          example: "Updated item"
+        description:
+          type: string
+          example: "Updated description"
+        price:
+          type: number
+          example: 150.0
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 1
+        listingId:
+          type: integer
+          example: 10
+        quantity:
+          type: integer
+          example: 2
+        totalPrice:
+          type: number
+          example: 200.0
+    OrderCreate:
+      type: object
+      required:
+        - userId
+        - listingId
+        - quantity
+        - totalPrice
+      properties:
+        userId:
+          type: integer
+          example: 1
+        listingId:
+          type: integer
+          example: 10
+        quantity:
+          type: integer
+          example: 2
+        totalPrice:
+          type: number
+          example: 200.0
+    OrderUpdate:
+      type: object
+      properties:
+        userId:
+          type: integer
+          example: 2
+        listingId:
+          type: integer
+          example: 20
+        quantity:
+          type: integer
+          example: 5
+        totalPrice:
+          type: number
+          example: 500.0
+    Success:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Operation successful"
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "An error occurred"
