@@ -129,4 +129,5 @@ function verifyPassword(inputPassword, storedPassword) {
 function generateToken() {
     // Генерация JWT-токена (используйте библиотеку jwt)
     return 'mock-token';
+
 }

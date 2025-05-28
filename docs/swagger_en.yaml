@@ -162,14 +162,10 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        '204':
           description: "Logout successful"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Success"
-        '400':
-          description: "Bad Request"
+        '401':
+          description: "Unauthorized - Token not provided or invalid"
           content:
             application/json:
               schema:

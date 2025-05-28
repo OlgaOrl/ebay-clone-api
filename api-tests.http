@@ -1,0 +1,53 @@
+### TC-001: User Registration
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "username": "testuser001",
+  "email": "testuser001@example.com",
+  "password": "TestPass123!"
+}
+
+### TC-002: User Login
+POST http://localhost:3000/sessions
+Content-Type: application/json
+
+{
+  "email": "testuser001@example.com",
+  "password": "TestPass123!"
+}
+
+### TC-004: Get All Listings
+GET http://localhost:3000/listings
+### TC-003: Create Listing (замените YOUR_TOKEN на реальный токен)
+POST http://localhost:3000/listings
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "title": "Test Smartphone",
+  "description": "Brand new smartphone for testing",
+  "price": 299.99
+}
+### TC-003: Create Listing
+POST http://localhost:3000/listings
+Content-Type: application/json
+Authorization: Bearer mock-token
+
+{
+  "title": "Test Smartphone",
+  "description": "Brand new smartphone for testing",
+  "price": 299.99
+}
+
+### TC-005: Create Order
+POST http://localhost:3000/orders
+Content-Type: application/json
+Authorization: Bearer mock-token
+
+{
+  "userId": 1,
+  "listingId": 1,
+  "quantity": 2,
+  "totalPrice": 599.98
+}

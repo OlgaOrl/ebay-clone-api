@@ -163,14 +163,10 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        '204':
           description: "Väljalogimine õnnestus"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Success"
-        '400':
-          description: "Vigane taotlus"
+        '401':
+          description: "Autoriseerimata - Token puudub või on kehtetu"
           content:
             application/json:
               schema:
