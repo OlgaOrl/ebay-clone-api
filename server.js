@@ -6,12 +6,20 @@ const cors = require('cors');
 
 const app = express();
 
-// Строгая настройка CORS только для listings
+// Глобальная настройка CORS для всех роутов
 const corsMiddleware = cors({
-    origin: ['https://olga-orlova.me', 'http://localhost:3000'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    origin: [
+        'https://olga-orlova.me',
+        'http://localhost:3000',
+        'https://docs-en.olga-orlova.me',
+        'https://docs-et.olga-orlova.me'
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 });
+
+// Применяем CORS глобально
+app.use(corsMiddleware);
 
 // Парсинг JSON и настройка безопасности
 app.use(express.json());
@@ -37,11 +45,11 @@ const sessionRoutes = require('./routes/sessionRoutes');
 // Монтирование роутов
 app.use('/users', userRoutes);
 app.use('/sessions', sessionRoutes);
-app.use('/listings', corsMiddleware, listingRoutes); // CORS только для listings
+app.use('/listings', listingRoutes);
 app.use('/orders', orderRoutes);
 
 // Обработка 404 ошибки
-app.use((req, res,) => {
+app.use((req, res) => {
     res.status(404).json({
         error: 'Endpoint не найден',
         path: req.path
@@ -49,7 +57,7 @@ app.use((req, res,) => {
 });
 
 // Глобальный обработчик ошибок
-app.use((err, req, res, ) => {
+app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({
         error: 'Внутренняя ошибка сервера',

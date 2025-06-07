@@ -80,6 +80,14 @@ paths:
       summary: "Muuda kasutaja"
       security:
         - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          description: "Kasutaja ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
       requestBody:
         required: false
         content:
@@ -95,8 +103,22 @@ paths:
                 $ref: "#/components/schemas/User"
         '400':
           description: "Vigane taotlus"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: "Autoriseerimata - Token puudub või on kehtetu"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         '404':
           description: "Kasutajat ei leitud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
     delete:
       tags:
         - "Users"
@@ -112,12 +134,14 @@ paths:
             type: integer
           example: 1
       responses:
-        '200':
+        '204':
           description: "Kasutaja kustutatud"
+        '401':
+          description: "Autoriseerimata - Token puudub või on kehtetu"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Success"
+                $ref: "#/components/schemas/Error"
         '404':
           description: "Kasutajat ei leitud"
           content:

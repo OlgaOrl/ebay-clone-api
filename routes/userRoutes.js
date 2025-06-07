@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
+const authMiddleware = require('../middleware/authMiddleware');
 
 router.post('/', userController.createUser);        // Регистрация
 router.get('/:id', userController.getUser);         // Получение пользователя
-router.put('/:id', userController.updateUser);      // Обновление пользователя
-router.delete('/:id', userController.deleteUser);   // Удаление пользователя
+router.put('/:id', authMiddleware, userController.updateUser);      // Обновление пользователя
+router.delete('/:id', authMiddleware, userController.deleteUser);   // Удаление пользователя
 
 module.exports = router;

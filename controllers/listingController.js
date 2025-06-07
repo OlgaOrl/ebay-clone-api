@@ -7,9 +7,38 @@ exports.createListing = (req, res) => {
         id: 1,
         title: req.body.title,
         description: req.body.description,
-        price: req.body.price
+        price: req.body.price,
+        userId: req.user?.id // Информация из токена
     };
     return res.status(201).json(newListing);
+};
+
+// Обновить объявление
+exports.updateListing = (req, res) => {
+    const listingId = parseInt(req.params.id, 10);
+
+    // Пример логики обновления
+    const updatedListing = {
+        id: listingId,
+        title: req.body.title || "Updated title",
+        description: req.body.description || "Updated description",
+        price: req.body.price || 200,
+        userId: req.user?.id, // Информация из токена
+        updatedAt: new Date().toISOString()
+    };
+
+    return res.status(200).json(updatedListing);
+};
+
+// Удалить объявление
+exports.deleteListing = (req, res) => {
+    const listingId = parseInt(req.params.id, 10);
+
+    // Пример логики удаления
+    return res.status(200).json({
+        message: `Listing ${listingId} deleted successfully`,
+        deletedBy: req.user?.id // Информация из токена
+    });
 };
 
 // Получить все объявления

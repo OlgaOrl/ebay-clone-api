@@ -79,6 +79,14 @@ paths:
       summary: "Update User"
       security:
         - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          description: "User ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
       requestBody:
         required: false
         content:
@@ -94,8 +102,22 @@ paths:
                 $ref: "#/components/schemas/User"
         '400':
           description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: "Unauthorized - Token not provided or invalid"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         '404':
           description: "User not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
     delete:
       tags:
         - "Users"
@@ -111,12 +133,14 @@ paths:
             type: integer
           example: 1
       responses:
-        '200':
+        '204':
           description: "User deleted"
+        '401':
+          description: "Unauthorized - Token not provided or invalid"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Success"
+                $ref: "#/components/schemas/Error"
         '404':
           description: "User not found"
           content:
