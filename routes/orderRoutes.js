@@ -1,22 +1,32 @@
-// routes/orderRoutes.js
+// routes/orderRoutes.js - Production Version
 const express = require('express');
 const router = express.Router();
 const orderController = require('../controllers/orderController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// Получить все заказы пользователя (защищено токеном)
-router.get('/', authMiddleware, orderController.getAllOrders);
+// All routes require authentication
+router.use(authMiddleware);
 
-// Создать заказ (защищено токеном)
-router.post('/', authMiddleware, orderController.createOrder);
+// GET /orders - Get all user orders (with filtering & pagination)
+// Query params: ?status=pending&page=1&limit=10
+router.get('/', orderController.getAllOrders);
 
-// Обновить заказ (защищено токеном)
-router.patch('/:id', authMiddleware, orderController.updateOrder);
+// POST /orders - Create new order
+router.post('/', orderController.createOrder);
 
-// Удалить заказ - отменить (защищено токеном)
-router.delete('/:id', authMiddleware, orderController.deleteOrder);
+// GET /orders/:id - Get specific order by ID
+router.get('/:id', orderController.getOrderById);
 
-// Получить заказ по id (защищено токеном)
-router.get('/:id', authMiddleware, orderController.getOrderById);
+// PATCH /orders/:id - Update order (limited conditions - only pending orders)
+router.patch('/:id', orderController.updateOrder);
+
+// PATCH /orders/:id/cancel - Cancel order (instead of delete)
+router.patch('/:id/cancel', orderController.cancelOrder);
+
+// PATCH /orders/:id/status - Update order status (for sellers)
+router.patch('/:id/status', orderController.updateOrderStatus);
+
+// DELETE route completely removed for production safety
+// Orders should never be deleted, only cancelled
 
 module.exports = router;

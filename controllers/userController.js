@@ -1,6 +1,8 @@
 const users = []; // В реальном приложении - база данных
 
 exports.createUser = (req, res) => {
+    console.log('👤 Создание пользователя:', req.body);
+
     const { username, email, password } = req.body;
 
     // Валидация входных данных
@@ -23,19 +25,23 @@ exports.createUser = (req, res) => {
         id: users.length + 1,
         username,
         email,
-        password: hashPassword(password) // Используйте bcrypt в реальном проекте
+        password: hashPassword(password),
+        createdAt: new Date()
     };
 
     users.push(newUser);
+    console.log('✅ Пользователь создан:', { id: newUser.id, username, email });
 
     return res.status(201).json({
         id: newUser.id,
         username: newUser.username,
-        email: newUser.email
+        email: newUser.email,
+        message: 'Пользователь успешно создан'
     });
 };
 
 exports.login = (req, res) => {
+    console.log('🔐 Попытка входа:', req.body.email);
     const { email, password } = req.body;
 
     // Найти пользователя
@@ -43,6 +49,7 @@ exports.login = (req, res) => {
 
     // Проверка credentials
     if (!user || !verifyPassword(password, user.password)) {
+        console.log('❌ Неверные учетные данные для:', email);
         return res.status(400).json({
             error: 'Неверные учетные данные'
         });
@@ -50,28 +57,34 @@ exports.login = (req, res) => {
 
     // Генерация токена (в реальном приложении)
     const token = generateToken(user);
+    console.log('✅ Успешный вход:', email, 'токен:', token);
 
     return res.status(200).json({
         message: 'Вход выполнен успешно',
-        token
+        token,
+        user: {
+            id: user.id,
+            username: user.username,
+            email: user.email
+        }
     });
-};
-
-exports.logout = (req, res) => {
-    // В реальном приложении - инвалидация токена
-    return res.status(204).end();
 };
 
 exports.getUser = (req, res) => {
     const userId = parseInt(req.params.id);
+    console.log('👤 Поиск пользователя с ID:', userId);
+    console.log('📋 Всего пользователей в базе:', users.length);
+
     const user = users.find(u => u.id === userId);
 
     if (!user) {
+        console.log('❌ Пользователь не найден:', userId);
         return res.status(404).json({
             error: 'Пользователь не найден'
         });
     }
 
+    console.log('✅ Пользователь найден:', user.username);
     return res.status(200).json({
         id: user.id,
         username: user.username,
@@ -83,9 +96,12 @@ exports.updateUser = (req, res) => {
     const userId = parseInt(req.params.id);
     const { username, email } = req.body;
 
+    console.log('📝 Обновление пользователя:', userId, req.body);
+
     const userIndex = users.findIndex(u => u.id === userId);
 
     if (userIndex === -1) {
+        console.log('❌ Пользователь для обновления не найден:', userId);
         return res.status(404).json({
             error: 'Пользователь не найден'
         });
@@ -94,14 +110,24 @@ exports.updateUser = (req, res) => {
     users[userIndex] = {
         ...users[userIndex],
         username: username || users[userIndex].username,
-        email: email || users[userIndex].email
+        email: email || users[userIndex].email,
+        updatedAt: new Date()
     };
 
-    return res.status(200).json(users[userIndex]);
+    console.log('✅ Пользователь обновлен:', users[userIndex]);
+
+    return res.status(200).json({
+        id: users[userIndex].id,
+        username: users[userIndex].username,
+        email: users[userIndex].email,
+        message: 'Профиль успешно обновлен'
+    });
 };
 
 exports.deleteUser = (req, res) => {
     const userId = parseInt(req.params.id);
+    console.log('🗑️ Удаление пользователя:', userId);
+
     const userIndex = users.findIndex(u => u.id === userId);
 
     if (userIndex === -1) {
@@ -111,23 +137,25 @@ exports.deleteUser = (req, res) => {
     }
 
     users.splice(userIndex, 1);
+    console.log('✅ Пользователь удален');
 
     return res.status(204).end();
 };
 
-// Вспомогательные функции (в реальном проекте используйте библиотеки)
+exports.logout = (req, res) => {
+    console.log('👋 Выход из системы');
+    return res.status(204).end();
+};
+
+// Вспомогательные функции
 function hashPassword(password) {
-    // Простой пример хеширования (НЕ ИСПОЛЬЗУЙТЕ В ПРОДАКШЕНЕ)
-    return password; // Замените на bcrypt
+    return password; // Замените на bcrypt в продакшене
 }
 
 function verifyPassword(inputPassword, storedPassword) {
-    // Простая проверка (НЕБЕЗОПАСНО!)
     return inputPassword === storedPassword;
 }
 
-function generateToken() {
-    // Генерация JWT-токена (используйте библиотеку jwt)
-    return 'mock-token';
-
+function generateToken(user) {
+    return `mock-token-${user.id}-${Date.now()}`;
 }

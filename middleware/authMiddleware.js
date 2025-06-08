@@ -1,43 +1,45 @@
-const jwt = require('jsonwebtoken');
-
+// Simple middleware for development (without JWT)
 function authMiddleware(req, res, next) {
-    console.log('🔍 AuthMiddleware: проверяем токен для', req.method, req.path);
+    console.log('🔍 AuthMiddleware: checking token for', req.method, req.path);
 
-    // Получаем заголовок авторизации
+    // Get authorization header
     const authHeader = req.headers.authorization;
     console.log('📋 Authorization header:', authHeader);
 
     if (!authHeader) {
-        console.log('❌ Токен не предоставлен');
+        console.log('❌ Token not provided');
         return res.status(401).json({ message: "Token not provided" });
     }
 
-    // Ожидаем формат "Bearer <token>"
+    // Expect format "Bearer <token>"
     const tokenParts = authHeader.split(' ');
     if (tokenParts[0] !== 'Bearer' || !tokenParts[1]) {
-        console.log('❌ Неправильный формат токена');
+        console.log('❌ Invalid token format');
         return res.status(401).json({ message: "Invalid token format" });
     }
 
     const token = tokenParts[1];
-    console.log('🔑 Токен получен, проверяем...');
+    console.log('🔑 Token received:', token);
 
-    // Проверяем наличие JWT_SECRET
-    if (!process.env.JWT_SECRET) {
-        console.error('❌ JWT_SECRET is not defined');
-        return res.status(500).json({ message: "Server configuration error" });
+    // Simple mock token validation (for development)
+    if (token.startsWith('mock-token-')) {
+        // Extract user ID from mock token: mock-token-{userId}-{timestamp}
+        const parts = token.split('-');
+        if (parts.length >= 3) {
+            const userId = parts[2];
+
+            console.log('✅ Mock token valid for user:', userId);
+            req.user = {
+                id: parseInt(userId, 10),
+                username: `user${userId}`
+            };
+            return next();
+        }
     }
 
-    // Проверяем токен с использованием секрета из переменных окружения
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            console.error('❌ JWT verification error:', err.message);
-            return res.status(403).json({ message: "Invalid token" });
-        }
-        console.log('✅ Токен валиден для пользователя:', decoded);
-        req.user = decoded;
-        next();
-    });
+    // If it's not a valid mock token
+    console.log('❌ Invalid token format');
+    return res.status(403).json({ message: "Invalid token" });
 }
 
 module.exports = authMiddleware;
