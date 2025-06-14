@@ -78,8 +78,8 @@ Selle testplaani eesmärk on tagada eBayClone API kvaliteet ja usaldusväärne t
 - DELETE /orders/{id} (tellimuse kustutamine)
 
 ### 5.2 Build'id ja keskkonnad
-- **Arenduskeskkond:** localhost:3000
-- **Tootmiskeskkond:** https://olga-orlova.me
+- **Arenduskeskkond:** localhost:3000/docs/en, localhost:3000/docs/et
+- **Tootmiskeskkond:** https://ebay-clone.olga-orlova.me/docs/en, https://ebay-clone.olga-orlova.me/docs/et
 - **Git repository:** main branch
 - **Node.js versioon:** v22.14.0
 

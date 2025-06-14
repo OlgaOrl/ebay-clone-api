@@ -4,10 +4,12 @@ info:
   version: "1.0.0"
   description: |
     This API allows managing an eBay-like marketplace. All endpoints are documented.
-
+    
+    Documentation is available in [English](https://ebay-clone.olga-orlova.me/docs/en) and [Estonian](https://ebay-clone.olga-orlova.me/docs/et).
 servers:
   - url: http://localhost:3000
   - url: https://olga-orlova.me
+  - url: https://ebay-clone.olga-orlova.me
 tags:
   - name: "Users"
     description: "User management"
@@ -632,4 +634,10 @@ components:
       properties:
         error:
           type: string
-          example: "An error occurred"
+          example: "All fields are required"
+        code:
+          type: string
+          example: "VALIDATION_ERROR"
+        details:
+          type: object
+          example: { "field": "email", "message": "Email is required" }

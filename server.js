@@ -11,11 +11,9 @@ const app = express();
 const corsMiddleware = cors({
     origin: [
         'https://olga-orlova.me',
-        'https://ebayclone.olga-orlova.me',
+        'https://ebay-clone.olga-orlova.me',
         'http://localhost:3000',
-        'http://localhost:5173',
-        'https://docs-en.olga-orlova.me',
-        'https://docs-et.olga-orlova.me'
+        'http://localhost:5173'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -35,13 +33,75 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Protection from some vulnerabilities
 app.disable('x-powered-by');
 
+// Add redirects for old subdomain-based URLs
+app.use((req, res, next) => {
+    const host = req.headers.host;
+    
+    // Redirect from old subdomain URLs to new path-based structure
+    if (host === 'docs-en.olga-orlova.me') {
+        return res.redirect(301, 'https://ebay-clone.olga-orlova.me/docs/en' + req.url);
+    }
+    
+    if (host === 'docs-et.olga-orlova.me') {
+        return res.redirect(301, 'https://ebay-clone.olga-orlova.me/docs/et' + req.url);
+    }
+    
+    next();
+});
+
+// Root path redirect to documentation
+app.get('/', (req, res) => {
+    // Detect preferred language from browser
+    const acceptLanguage = req.headers['accept-language'] || '';
+    
+    // If Estonian is preferred, redirect to Estonian docs
+    if (acceptLanguage.includes('et')) {
+        return res.redirect('/docs/et');
+    }
+    
+    // Default to English docs
+    res.redirect('/docs/en');
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'UP',
+        timestamp: new Date().toISOString(),
+        version: require('./package.json').version,
+        environment: process.env.NODE_ENV || 'development',
+        documentation: {
+            english: 'https://ebay-clone.olga-orlova.me/docs/en',
+            estonian: 'https://ebay-clone.olga-orlova.me/docs/et'
+        }
+    });
+});
+
 // Swagger documentation
 const swaggerEn = YAML.load('./docs/swagger_en.yaml');
 const swaggerEt = YAML.load('./docs/swagger_et.yaml');
 
-// Swagger routes
+// Updated Swagger routes with project-specific URL structure
 app.use('/docs/en', swaggerUi.serveFiles(swaggerEn), swaggerUi.setup(swaggerEn));
 app.use('/docs/et', swaggerUi.serveFiles(swaggerEt), swaggerUi.setup(swaggerEt));
+
+// Redirect root /docs to English documentation by default
+app.get('/docs', (req, res) => {
+    // Detect preferred language from browser
+    const acceptLanguage = req.headers['accept-language'] || '';
+    
+    // If Estonian is preferred, redirect to Estonian docs
+    if (acceptLanguage.includes('et')) {
+        return res.redirect('/docs/et');
+    }
+    
+    // Default to English docs
+    res.redirect('/docs/en');
+});
+
+// Serve static documentation files
+app.use('/docs/en/assets', express.static(path.join(__dirname, 'docs/assets/en')));
+app.use('/docs/et/assets', express.static(path.join(__dirname, 'docs/assets/et')));
 
 // API routes
 const userRoutes = require('./routes/userRoutes');

@@ -4,10 +4,13 @@ info:
   version: "1.0.0"
   description: |
     See API võimaldab hallata eBay sarnast turuplatvormi. Kõik lõpp-punktid on dokumenteeritud.
+    
+    Dokumentatsioon on saadaval [inglise](https://ebay-clone.olga-orlova.me/docs/en) ja [eesti](https://ebay-clone.olga-orlova.me/docs/et) keeles.
 
 servers:
   - url: http://localhost:3000
   - url: https://olga-orlova.me
+  - url: https://ebay-clone.olga-orlova.me
 
 tags:
   - name: "Users"
@@ -74,10 +77,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-    patch:
+    put:
       tags:
         - "Users"
-      summary: "Muuda kasutaja"
+      summary: "Asenda kasutaja"
       security:
         - bearerAuth: []
       parameters:
@@ -89,7 +92,7 @@ paths:
             type: integer
           example: 1
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
@@ -103,22 +106,10 @@ paths:
                 $ref: "#/components/schemas/User"
         '400':
           description: "Vigane taotlus"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
         '401':
-          description: "Autoriseerimata - Token puudub või on kehtetu"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          description: "Autoriseerimata - Token puudub või on vigane"
         '404':
           description: "Kasutajat ei leitud"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
     delete:
       tags:
         - "Users"
