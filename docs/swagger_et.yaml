@@ -86,7 +86,7 @@ paths:
     put:
       tags:
         - "Users"
-      summary: "Uuenda kasutajat (täielik uuendus)"
+      summary: "Asenda kasutaja"
       security:
         - bearerAuth: []
       parameters:
@@ -98,36 +98,24 @@ paths:
             type: integer
           example: 1
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/UserUpdate"
       responses:
         '200':
-          description: "Kasutaja edukalt uuendatud"
+          description: "Kasutaja uuendatud"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
         '400':
           description: "Vigane päring"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
         '401':
-          description: "Autoriseerimata"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          description: "Autoriseerimata - Token puudub või on vigane"
         '404':
           description: "Kasutajat ei leitud"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
     delete:
       tags:
         - "Users"

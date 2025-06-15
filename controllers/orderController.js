@@ -17,51 +17,6 @@ const getAllOrders = (req, res) => {
         userOrders = userOrders.filter(order => order.status === status);
     }
 
-    // Add mock orders for demonstration (only if no real orders exist)
-    if (userOrders.length === 0) {
-        const mockOrders = [
-            {
-                id: 1,
-                userId: userId,
-                listingId: 2,
-                quantity: 1,
-                totalPrice: 1200,
-                status: 'delivered',
-                shippingAddress: {
-                    street: 'Main St 123',
-                    city: 'Tallinn',
-                    state: 'Harjumaa',
-                    zipCode: '10001',
-                    country: 'Estonia'
-                },
-                createdAt: '2025-06-01T10:00:00Z',
-                deliveredAt: '2025-06-05T14:30:00Z'
-            },
-            {
-                id: 2,
-                userId: userId,
-                listingId: 1,
-                quantity: 2,
-                totalPrice: 300,
-                status: 'pending',
-                shippingAddress: {
-                    street: 'Park Ave 456',
-                    city: 'Tartu',
-                    state: 'Tartumaa',
-                    zipCode: '50001',
-                    country: 'Estonia'
-                },
-                createdAt: '2025-06-02T15:30:00Z'
-            }
-        ];
-        userOrders = [...mockOrders, ...userOrders];
-
-        // Apply status filter to mock orders too
-        if (status) {
-            userOrders = userOrders.filter(order => order.status === status);
-        }
-    }
-
     // Sort by creation date (newest first)
     userOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
@@ -152,47 +107,6 @@ const getOrderById = (req, res) => {
         return res.status(200).json(order);
     }
 
-    // Check mock orders
-    if (orderId === 1 || orderId === 2) {
-        const mockOrders = {
-            1: {
-                id: 1,
-                userId: userId,
-                listingId: 2,
-                quantity: 1,
-                totalPrice: 1200,
-                status: 'delivered',
-                shippingAddress: {
-                    street: 'Main St 123',
-                    city: 'Tallinn',
-                    state: 'Harjumaa',
-                    zipCode: '10001',
-                    country: 'Estonia'
-                },
-                createdAt: '2025-06-01T10:00:00Z',
-                deliveredAt: '2025-06-05T14:30:00Z'
-            },
-            2: {
-                id: 2,
-                userId: userId,
-                listingId: 1,
-                quantity: 2,
-                totalPrice: 300,
-                status: 'pending',
-                shippingAddress: {
-                    street: 'Park Ave 456',
-                    city: 'Tartu',
-                    state: 'Tartumaa',
-                    zipCode: '50001',
-                    country: 'Estonia'
-                },
-                createdAt: '2025-06-02T15:30:00Z'
-            }
-        };
-
-        return res.status(200).json(mockOrders[orderId]);
-    }
-
     console.log('❌ Order not found:', orderId);
     return res.status(404).json({ error: "Order not found" });
 };
@@ -242,18 +156,11 @@ const updateOrder = (req, res) => {
         return res.status(200).json(order);
     }
 
-    // Mock orders cannot be updated
-    if (orderId === 1 || orderId === 2) {
-        return res.status(400).json({
-            error: 'Mock orders cannot be updated'
-        });
-    }
-
     console.log('❌ Order not found for update:', orderId);
     return res.status(404).json({ error: 'Order not found' });
 };
 
-// Cancel order (FIXED VERSION - allows mock order cancellation)
+// Cancel order
 const cancelOrder = (req, res) => {
     const orderId = parseInt(req.params.id, 10);
     const { cancelReason } = req.body;
@@ -296,22 +203,6 @@ const cancelOrder = (req, res) => {
         return res.status(200).json({
             message: `Order ${orderId} cancelled successfully`,
             order: order
-        });
-    }
-
-    // FIXED: Allow mock order cancellation for demo purposes
-    if (orderId === 1 || orderId === 2) {
-        console.log('✅ Mock order cancellation simulated for order:', orderId);
-
-        // Return successful cancellation for mock orders
-        return res.status(200).json({
-            message: `Order ${orderId} cancelled successfully`,
-            order: {
-                id: orderId,
-                status: 'cancelled',
-                cancelledAt: new Date().toISOString(),
-                cancelReason: cancelReason || 'Customer request'
-            }
         });
     }
 

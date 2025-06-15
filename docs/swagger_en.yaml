@@ -84,7 +84,7 @@ paths:
     put:
       tags:
         - "Users"
-      summary: "Update User (Full Update)"
+      summary: "Replace User"
       security:
         - bearerAuth: []
       parameters:
@@ -96,36 +96,24 @@ paths:
             type: integer
           example: 1
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/UserUpdate"
       responses:
         '200':
-          description: "User updated successfully"
+          description: "User updated"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
         '400':
           description: "Bad Request"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
         '401':
-          description: "Unauthorized"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          description: "Unauthorized - Token not provided or invalid"
         '404':
           description: "User not found"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
     patch:
       tags:
         - "Users"
@@ -155,22 +143,10 @@ paths:
                 $ref: "#/components/schemas/User"
         '400':
           description: "Bad Request"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
         '401':
           description: "Unauthorized - Token not provided or invalid"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
         '404':
           description: "User not found"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
     delete:
       tags:
         - "Users"
