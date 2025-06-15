@@ -84,22 +84,22 @@ const getAllOrders = (req, res) => {
     });
 };
 
-// Create new order
+// Create a new order
 const createOrder = (req, res) => {
     console.log('🛒 Creating order:', req.body);
 
-    const { listingId, quantity = 1, shippingAddress } = req.body;
+    const { listingId, quantity, shippingAddress } = req.body;
 
     // Validation
-    if (!listingId) {
+    if (!listingId || !quantity || !shippingAddress) {
         return res.status(400).json({
-            error: 'Listing ID is required'
+            error: 'Listing ID, quantity, and shipping address are required'
         });
     }
 
-    if (!shippingAddress || !shippingAddress.street || !shippingAddress.city) {
+    if (!shippingAddress.street || !shippingAddress.city || !shippingAddress.country) {
         return res.status(400).json({
-            error: 'Complete shipping address is required'
+            error: 'Shipping address must include street, city, and country'
         });
     }
 
@@ -339,21 +339,9 @@ const updateOrderStatus = (req, res) => {
 
     if (orderIndex !== -1) {
         const order = orders[orderIndex];
-
-        // In real app, check if user is the seller
-        // For now, allow any authenticated user for demo
-
-        // Status progression validation
-        const statusOrder = ['pending', 'confirmed', 'shipped', 'delivered'];
-        const currentIndex = statusOrder.indexOf(order.status);
-        const newIndex = statusOrder.indexOf(status);
-
-        if (newIndex < currentIndex) {
-            return res.status(400).json({
-                error: 'Cannot revert order status backwards'
-            });
-        }
-
+        
+        // In a real app, check if user is seller of the listing
+        
         order.status = status;
         order.updatedAt = new Date().toISOString();
 

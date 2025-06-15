@@ -1,26 +1,26 @@
 const users = []; // В реальном приложении - база данных
 
 exports.createUser = (req, res) => {
-    console.log('👤 Создание пользователя:', req.body);
+    console.log('👤 Creating user:', req.body);
 
     const { username, email, password } = req.body;
 
-    // Валидация входных данных
+    // Validation
     if (!username || !email || !password) {
         return res.status(400).json({
-            error: 'Все поля обязательны'
+            error: 'All fields are required'
         });
     }
 
-    // Проверка существования пользователя
+    // Check if user exists
     const existingUser = users.find(u => u.email === email);
     if (existingUser) {
         return res.status(409).json({
-            error: 'Пользователь с таким email уже существует'
+            error: 'User with this email already exists'
         });
     }
 
-    // Создание нового пользователя
+    // Create new user
     const newUser = {
         id: users.length + 1,
         username,
@@ -41,26 +41,26 @@ exports.createUser = (req, res) => {
 };
 
 exports.login = (req, res) => {
-    console.log('🔐 Попытка входа:', req.body.email);
+    console.log('🔐 Login attempt:', req.body.email);
     const { email, password } = req.body;
 
-    // Найти пользователя
+    // Find user
     const user = users.find(u => u.email === email);
 
-    // Проверка credentials
+    // Check credentials
     if (!user || !verifyPassword(password, user.password)) {
-        console.log('❌ Неверные учетные данные для:', email);
+        console.log('❌ Invalid credentials for:', email);
         return res.status(400).json({
-            error: 'Неверные учетные данные'
+            error: 'Invalid credentials'
         });
     }
 
-    // Генерация токена (в реальном приложении)
+    // Generate token (in real app)
     const token = generateToken(user);
-    console.log('✅ Успешный вход:', email, 'токен:', token);
+    console.log('✅ Successful login:', email, 'token:', token);
 
     return res.status(200).json({
-        message: 'Вход выполнен успешно',
+        message: 'Login successful',
         token,
         user: {
             id: user.id,
@@ -96,14 +96,14 @@ exports.updateUser = (req, res) => {
     const userId = parseInt(req.params.id);
     const { username, email } = req.body;
 
-    console.log('📝 Обновление пользователя:', userId, req.body);
+    console.log('📝 Updating user:', userId, req.body);
 
     const userIndex = users.findIndex(u => u.id === userId);
 
     if (userIndex === -1) {
-        console.log('❌ Пользователь для обновления не найден:', userId);
+        console.log('❌ User not found for update:', userId);
         return res.status(404).json({
-            error: 'Пользователь не найден'
+            error: 'User not found'
         });
     }
 

@@ -11,7 +11,7 @@ const app = express();
 const corsMiddleware = cors({
     origin: [
         'https://olga-orlova.me',
-        'https://ebay-clone.olga-orlova.me',
+        'https://ebayclone.olga-orlova.me',
         'http://localhost:3000',
         'http://localhost:5173'
     ],

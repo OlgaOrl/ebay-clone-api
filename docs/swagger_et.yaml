@@ -10,7 +10,7 @@ info:
 servers:
   - url: http://localhost:3000
   - url: https://olga-orlova.me
-  - url: https://ebay-clone.olga-orlova.me
+  - url: https://ebayclone.olga-orlova.me
 
 tags:
   - name: "Users"
@@ -45,7 +45,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/User"
         '400':
-          description: "Vigane taotlus"
+          description: "Vigane päring"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '409':
+          description: "Konflikt - E-post on juba kasutusel"
           content:
             application/json:
               schema:
@@ -80,7 +86,7 @@ paths:
     put:
       tags:
         - "Users"
-      summary: "Asenda kasutaja"
+      summary: "Uuenda kasutajat (täielik uuendus)"
       security:
         - bearerAuth: []
       parameters:
@@ -92,24 +98,36 @@ paths:
             type: integer
           example: 1
       requestBody:
-        required: true
+        required: false
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/UserUpdate"
       responses:
         '200':
-          description: "Kasutaja uuendatud"
+          description: "Kasutaja edukalt uuendatud"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
         '400':
-          description: "Vigane taotlus"
+          description: "Vigane päring"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         '401':
-          description: "Autoriseerimata - Token puudub või on vigane"
+          description: "Autoriseerimata"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         '404':
           description: "Kasutajat ei leitud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
     delete:
       tags:
         - "Users"
@@ -126,9 +144,9 @@ paths:
           example: 1
       responses:
         '204':
-          description: "Kasutaja kustutatud"
+          description: "Sisu puudub - Kasutaja edukalt kustutatud"
         '401':
-          description: "Autoriseerimata - Token puudub või on kehtetu"
+          description: "Autoriseerimata"
           content:
             application/json:
               schema:
@@ -197,26 +215,44 @@ paths:
       summary: "Hangi kõik kuulutused"
       parameters:
         - in: query
-          name: search
-          description: "Otsingusõna"
+          name: category
+          description: "Filtreeri kategooria järgi"
           required: false
           schema:
             type: string
-          example: "phone"
+          example: "elektroonika"
         - in: query
-          name: priceMin
-          description: "Minimaalne hind"
+          name: condition
+          description: "Filtreeri seisukorra järgi"
           required: false
           schema:
-            type: number
-          example: 50
+            type: string
+            enum: [new, like-new, good, fair, poor]
+          example: "new"
         - in: query
-          name: priceMax
-          description: "Maksimaalne hind"
+          name: sort
+          description: "Sorteeri välja järgi"
           required: false
           schema:
-            type: number
-          example: 500
+            type: string
+            enum: [price_asc, price_desc, date_asc, date_desc]
+          example: "price_asc"
+        - in: query
+          name: page
+          description: "Lehekülje number pagineerimiseks"
+          required: false
+          schema:
+            type: integer
+            default: 1
+          example: 1
+        - in: query
+          name: limit
+          description: "Elementide arv leheküljel"
+          required: false
+          schema:
+            type: integer
+            default: 10
+          example: 10
       responses:
         '200':
           description: "Kuulutuste loetelu"
@@ -230,10 +266,12 @@ paths:
       tags:
         - "Listings"
       summary: "Loo kuulutus"
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: "#/components/schemas/ListingCreate"
       responses:
@@ -244,7 +282,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/Listing"
         '400':
-          description: "Vigane taotlus"
+          description: "Vigane päring"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: "Autoriseerimata"
           content:
             application/json:
               schema:
@@ -280,10 +324,20 @@ paths:
       tags:
         - "Listings"
       summary: "Muuda kuulutus"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          description: "Kuulutuse ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
       requestBody:
         required: false
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: "#/components/schemas/ListingUpdate"
       responses:
@@ -294,9 +348,23 @@ paths:
               schema:
                 $ref: "#/components/schemas/Listing"
         '400':
-          description: "Vigane taotlus"
+          description: "Vigane päring"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: "Autoriseerimata"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         '404':
           description: "Kuulutust ei leitud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
     delete:
       tags:
         - "Listings"
@@ -341,15 +409,57 @@ paths:
           schema:
             type: integer
           example: 1
+        - in: query
+          name: status
+          description: "Filtreeri tellimuse staatuse järgi"
+          required: false
+          schema:
+            type: string
+            enum: [pending, confirmed, shipped, delivered, cancelled]
+          example: "pending"
+        - in: query
+          name: page
+          description: "Lehekülje number pagineerimiseks"
+          required: false
+          schema:
+            type: integer
+            default: 1
+          example: 1
+        - in: query
+          name: limit
+          description: "Elementide arv leheküljel"
+          required: false
+          schema:
+            type: integer
+            default: 10
+          example: 10
       responses:
         '200':
-          description: "Tellimuste loetelu"
+          description: "Tellimuste loetelu pagineerimisega"
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Order"
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Order"
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 25
+                      pages:
+                        type: integer
+                        example: 3
+                      currentPage:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
     post:
       tags:
         - "Orders"
@@ -455,6 +565,129 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /orders/{id}/cancel:
+    patch:
+      tags:
+        - "Orders"
+      summary: "Tühista tellimus"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          description: "Tellimuse ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cancelReason:
+                  type: string
+                  example: "Muutsin meelt"
+      responses:
+        '200':
+          description: "Tellimus edukalt tühistatud"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Tellimus edukalt tühistatud"
+                  order:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      status:
+                        type: string
+                        example: "cancelled"
+                      cancelledAt:
+                        type: string
+                        format: date-time
+                        example: "2023-06-15T09:32:09.103Z"
+                      cancelReason:
+                        type: string
+                        example: "Muutsin meelt"
+        '401':
+          description: "Autoriseerimata"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: "Tellimust ei leitud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /orders/{id}/status:
+    patch:
+      tags:
+        - "Orders"
+      summary: "Uuenda tellimuse staatust"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          description: "Tellimuse ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [pending, confirmed, shipped, delivered]
+                  example: "shipped"
+      responses:
+        '200':
+          description: "Tellimuse staatus edukalt uuendatud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        '400':
+          description: "Vale staatus"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Vale staatus. Peab olema: pending, confirmed, shipped või delivered"
+        '401':
+          description: "Autoriseerimata"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: "Tellimust ei leitud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
 #####################################
 # Components
 #####################################
@@ -541,13 +774,29 @@ components:
       properties:
         title:
           type: string
-          example: "New item"
+          example: "iPhone 13 Pro Max"
         description:
           type: string
-          example: "Item description"
+          example: "Uus, karbis"
         price:
           type: number
-          example: 100.0
+          example: 999.99
+        category:
+          type: string
+          example: "elektroonika"
+        condition:
+          type: string
+          enum: [new, like-new, good, fair, poor]
+          example: "new"
+        location:
+          type: string
+          example: "Tallinn, Eesti"
+        images:
+          type: array
+          items:
+            type: string
+            format: binary
+          description: "Toote pildid (max 5 faili, 5MB igaüks)"
     ListingUpdate:
       type: object
       properties:
@@ -578,26 +827,84 @@ components:
         totalPrice:
           type: number
           example: 200.0
+        status:
+          type: string
+          enum: [pending, confirmed, shipped, delivered, cancelled]
+          example: "pending"
+        shippingAddress:
+          type: object
+          properties:
+            street:
+              type: string
+              example: "123 Main St"
+            city:
+              type: string
+              example: "New York"
+            state:
+              type: string
+              example: "NY"
+            zipCode:
+              type: string
+              example: "10001"
+            country:
+              type: string
+              example: "USA"
+        buyerNotes:
+          type: string
+          example: "Palun toimetage pärast kella 17"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-06-15T09:33:48.250Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2023-06-15T09:34:43.423Z"
+        cancelledAt:
+          type: string
+          format: date-time
+          example: "2023-06-15T09:32:09.103Z"
+        cancelReason:
+          type: string
+          example: "Muutsin meelt"
     OrderCreate:
       type: object
       required:
-        - userId
         - listingId
         - quantity
-        - totalPrice
+        - shippingAddress
       properties:
-        userId:
-          type: integer
-          example: 1
         listingId:
           type: integer
           example: 10
         quantity:
           type: integer
           example: 2
-        totalPrice:
-          type: number
-          example: 200.0
+        shippingAddress:
+          type: object
+          required:
+            - street
+            - city
+            - country
+          properties:
+            street:
+              type: string
+              example: "123 Main St"
+            city:
+              type: string
+              example: "New York"
+            state:
+              type: string
+              example: "NY"
+            zipCode:
+              type: string
+              example: "10001"
+            country:
+              type: string
+              example: "USA"
+        buyerNotes:
+          type: string
+          example: "Palun toimetage pärast kella 17"
     OrderUpdate:
       type: object
       properties:
@@ -624,4 +931,10 @@ components:
       properties:
         error:
           type: string
-          example: "An error occurred"
+          example: "All fields are required"
+        code:
+          type: string
+          example: "VALIDATION_ERROR"
+        details:
+          type: object
+          example: { "field": "email", "message": "Email is required" }
