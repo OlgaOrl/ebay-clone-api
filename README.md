@@ -35,8 +35,8 @@ The API documentation (Swagger UI) is available at:
 
 ### API Documentation Servers
 The API documentation is available in two languages:
-- **English:** https://ebayc-lone.olga-orlova.me/docs/en
-- **Estonian:** https://ebay-clone.olga-orlova.me/docs/et
+- **English:** https://ebayclone.olga-orlova.me/docs/en
+- **Estonian:** https://ebayclone.olga-orlova.me/docs/et
 
 ## 🧪 Testing & Quality Assurance
 
