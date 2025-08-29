@@ -3,7 +3,7 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-router.post('/', userController.login);     // Вход
-router.delete('/', authMiddleware, userController.logout);  // Выход с проверкой аутентификации
+router.post('/', userController.login);     // Login
+router.delete('/', authMiddleware, userController.logout);  // Logout with authentication check
 
 module.exports = router;

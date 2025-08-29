@@ -1,4 +1,4 @@
-const users = []; // В реальном приложении - база данных
+const users = []; // In real application - database
 
 exports.createUser = (req, res) => {
     console.log('👤 Creating user:', req.body);
@@ -30,13 +30,13 @@ exports.createUser = (req, res) => {
     };
 
     users.push(newUser);
-    console.log('✅ Пользователь создан:', { id: newUser.id, username, email });
+    console.log('✅ User created:', { id: newUser.id, username, email });
 
     return res.status(201).json({
         id: newUser.id,
         username: newUser.username,
         email: newUser.email,
-        message: 'Пользователь успешно создан'
+        message: 'User successfully created'
     });
 };
 
@@ -72,19 +72,19 @@ exports.login = (req, res) => {
 
 exports.getUser = (req, res) => {
     const userId = parseInt(req.params.id);
-    console.log('👤 Поиск пользователя с ID:', userId);
-    console.log('📋 Всего пользователей в базе:', users.length);
+    console.log('👤 Looking for user with ID:', userId);
+    console.log('📋 Total users in database:', users.length);
 
     const user = users.find(u => u.id === userId);
 
     if (!user) {
-        console.log('❌ Пользователь не найден:', userId);
+        console.log('❌ User not found:', userId);
         return res.status(404).json({
-            error: 'Пользователь не найден'
+            error: 'User not found'
         });
     }
 
-    console.log('✅ Пользователь найден:', user.username);
+    console.log('✅ User found:', user.username);
     return res.status(200).json({
         id: user.id,
         username: user.username,
