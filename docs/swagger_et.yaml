@@ -43,7 +43,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 3
+                  username:
+                    type: string
+                    example: "test"
+                  email:
+                    type: string
+                    example: "test@gmail.com"
+                  message:
+                    type: string
+                    example: "Kasutaja edukalt loodud"
         '400':
           description: "Vigane päring"
           content:
@@ -116,6 +129,39 @@ paths:
           description: "Autoriseerimata - Token puudub või on vigane"
         '404':
           description: "Kasutajat ei leitud"
+    patch:
+      tags:
+        - "Users"
+      summary: "Muuda kasutaja"
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          description: "Kasutaja ID"
+          required: true
+          schema:
+            type: integer
+          example: 1
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        '200':
+          description: "Kasutaja uuendatud"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        '400':
+          description: "Vigane päring"
+        '401':
+          description: "Autoriseerimata - Token puudub või on vigane"
+        '404':
+          description: "Kasutajat ei leitud"
     delete:
       tags:
         - "Users"
@@ -132,19 +178,11 @@ paths:
           example: 1
       responses:
         '204':
-          description: "Sisu puudub - Kasutaja edukalt kustutatud"
+          description: "Kasutaja kustutatud"
         '401':
-          description: "Autoriseerimata"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          description: "Autoriseerimata - Token puudub või on vigane"
         '404':
           description: "Kasutajat ei leitud"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
 
   #####################################
   # SESSIONS
@@ -170,9 +208,18 @@ paths:
                 properties:
                   token:
                     type: string
-                    example: "jwt-token-here"
+                    example: "jwt-token-siin"
+                  message:
+                    type: string
+                    example: "Sisselogimine õnnestus"
         '400':
-          description: "Vigane taotlus"
+          description: "Vigane päring"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: "Vale e-post või parool"
           content:
             application/json:
               schema:
@@ -187,7 +234,7 @@ paths:
         '204':
           description: "Väljalogimine õnnestus"
         '401':
-          description: "Autoriseerimata - Token puudub või on kehtetu"
+          description: "Autoriseerimata - Token puudub või on vigane"
           content:
             application/json:
               schema:
@@ -210,46 +257,34 @@ paths:
             type: string
           example: "elektroonika"
         - in: query
-          name: condition
-          description: "Filtreeri seisukorra järgi"
+          name: minPrice
+          description: "Minimaalne hind"
           required: false
           schema:
-            type: string
-            enum: [new, like-new, good, fair, poor]
-          example: "new"
+            type: number
+          example: 100
         - in: query
-          name: sort
-          description: "Sorteeri välja järgi"
+          name: maxPrice
+          description: "Maksimaalne hind"
           required: false
           schema:
-            type: string
-            enum: [price_asc, price_desc, date_asc, date_desc]
-          example: "price_asc"
-        - in: query
-          name: page
-          description: "Lehekülje number pagineerimiseks"
-          required: false
-          schema:
-            type: integer
-            default: 1
-          example: 1
-        - in: query
-          name: limit
-          description: "Elementide arv leheküljel"
-          required: false
-          schema:
-            type: integer
-            default: 10
-          example: 10
+            type: number
+          example: 1000
       responses:
         '200':
-          description: "Kuulutuste loetelu"
+          description: "Kuulutuste nimekiri"
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Listing"
+                type: object
+                properties:
+                  listings:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Listing"
+                  message:
+                    type: string
+                    example: "Kuulutused edukalt leitud"
     post:
       tags:
         - "Listings"
@@ -268,19 +303,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Listing"
+                allOf:
+                  - $ref: "#/components/schemas/Listing"
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Kuulutus edukalt loodud"
         '400':
           description: "Vigane päring"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
         '401':
-          description: "Autoriseerimata"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          description: "Autoriseerimata - Token puudub või on vigane"
 
   /listings/{id}:
     get:
@@ -337,26 +370,16 @@ paths:
                 $ref: "#/components/schemas/Listing"
         '400':
           description: "Vigane päring"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
         '401':
-          description: "Autoriseerimata"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          description: "Autoriseerimata - Token puudub või on vigane"
         '404':
           description: "Kuulutust ei leitud"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
     delete:
       tags:
         - "Listings"
       summary: "Kustuta kuulutus"
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -366,18 +389,12 @@ paths:
             type: integer
           example: 1
       responses:
-        '200':
+        '204':
           description: "Kuulutus kustutatud"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Success"
+        '401':
+          description: "Autoriseerimata - Token puudub või on vigane"
         '404':
           description: "Kuulutust ei leitud"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
 
   #####################################
   # ORDERS
@@ -386,44 +403,21 @@ paths:
     get:
       tags:
         - "Orders"
-      summary: "Hangi kõik tellimused"
+      summary: "Hangi kasutaja tellimused"
       security:
         - bearerAuth: []
       parameters:
         - in: query
-          name: userId
-          description: "Filtreeri kasutaja ID järgi"
-          required: false
-          schema:
-            type: integer
-          example: 1
-        - in: query
           name: status
-          description: "Filtreeri tellimuse staatuse järgi"
+          description: "Filtreeri staatuse järgi"
           required: false
           schema:
             type: string
             enum: [pending, confirmed, shipped, delivered, cancelled]
           example: "pending"
-        - in: query
-          name: page
-          description: "Lehekülje number pagineerimiseks"
-          required: false
-          schema:
-            type: integer
-            default: 1
-          example: 1
-        - in: query
-          name: limit
-          description: "Elementide arv leheküljel"
-          required: false
-          schema:
-            type: integer
-            default: 10
-          example: 10
       responses:
         '200':
-          description: "Tellimuste loetelu pagineerimisega"
+          description: "Tellimuste nimekiri"
           content:
             application/json:
               schema:
@@ -438,16 +432,18 @@ paths:
                     properties:
                       total:
                         type: integer
-                        example: 25
-                      pages:
-                        type: integer
-                        example: 3
-                      currentPage:
+                        example: 5
+                      page:
                         type: integer
                         example: 1
-                      limit:
+                      pages:
                         type: integer
-                        example: 10
+                        example: 1
+                  message:
+                    type: string
+                    example: "Tellimused edukalt leitud"
+        '401':
+          description: "Autoriseerimata - Token puudub või on vigane"
     post:
       tags:
         - "Orders"
@@ -466,13 +462,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Order"
+                allOf:
+                  - $ref: "#/components/schemas/Order"
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Tellimus edukalt loodud"
         '400':
-          description: "Vigane taotlus"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          description: "Vigane päring"
+        '401':
+          description: "Autoriseerimata - Token puudub või on vigane"
 
   /orders/{id}:
     get:
@@ -694,10 +694,10 @@ components:
           example: 1
         username:
           type: string
-          example: "user1"
+          example: "kasutaja1"
         email:
           type: string
-          example: "user1@mail.com"
+          example: "kasutaja1@mail.com"
     UserCreate:
       type: object
       required:
@@ -707,13 +707,13 @@ components:
       properties:
         username:
           type: string
-          example: "user1"
+          example: "kasutaja1"
         email:
           type: string
-          example: "user1@mail.com"
+          example: "kasutaja1@mail.com"
         password:
           type: string
-          example: "secret"
+          example: "salasõna"
     UserLogin:
       type: object
       required:
@@ -722,22 +722,22 @@ components:
       properties:
         email:
           type: string
-          example: "user1@mail.com"
+          example: "kasutaja1@mail.com"
         password:
           type: string
-          example: "secret"
+          example: "salasõna"
     UserUpdate:
       type: object
       properties:
         username:
           type: string
-          example: "updatedUser"
+          example: "uuendatudKasutaja"
         email:
           type: string
-          example: "updated@mail.com"
+          example: "uuendatud@mail.com"
         password:
           type: string
-          example: "newSecret"
+          example: "uusSalasõna"
     Listing:
       type: object
       properties:
@@ -746,36 +746,61 @@ components:
           example: 1
         title:
           type: string
-          example: "New item"
+          example: "Uus toode"
         description:
           type: string
-          example: "Item description"
+          example: "Toote kirjeldus"
         price:
           type: number
           example: 100.0
+        category:
+          type: string
+          example: "elektroonika"
+        condition:
+          type: string
+          example: "uus"
+        location:
+          type: string
+          example: "Tallinn, Eesti"
+        images:
+          type: array
+          items:
+            type: string
+          example: ["pilt1.jpg", "pilt2.jpg"]
+        seller_id:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
     ListingCreate:
       type: object
       required:
         - title
         - description
         - price
+        - category
       properties:
         title:
           type: string
-          example: "iPhone 13 Pro Max"
+          example: "Uus toode"
         description:
           type: string
-          example: "Uus, karbis"
+          example: "Toote kirjeldus"
         price:
           type: number
-          example: 999.99
+          example: 100.0
         category:
           type: string
           example: "elektroonika"
         condition:
           type: string
-          enum: [new, like-new, good, fair, poor]
-          example: "new"
+          example: "uus"
         location:
           type: string
           example: "Tallinn, Eesti"
@@ -784,145 +809,112 @@ components:
           items:
             type: string
             format: binary
-          description: "Toote pildid (max 5 faili, 5MB igaüks)"
     ListingUpdate:
       type: object
       properties:
         title:
           type: string
-          example: "Updated item"
+          example: "Uuendatud toode"
         description:
           type: string
-          example: "Updated description"
+          example: "Uuendatud kirjeldus"
         price:
           type: number
           example: 150.0
+        category:
+          type: string
+          example: "elektroonika"
+        condition:
+          type: string
+          example: "kasutatud"
+        location:
+          type: string
+          example: "Tartu, Eesti"
+        images:
+          type: array
+          items:
+            type: string
+            format: binary
     Order:
       type: object
       properties:
         id:
           type: integer
           example: 1
-        userId:
+        listing_id:
           type: integer
           example: 1
-        listingId:
-          type: integer
-          example: 10
-        quantity:
+        buyer_id:
           type: integer
           example: 2
-        totalPrice:
+        seller_id:
+          type: integer
+          example: 1
+        quantity:
+          type: integer
+          example: 1
+        total_price:
           type: number
-          example: 200.0
+          example: 100.0
         status:
           type: string
           enum: [pending, confirmed, shipped, delivered, cancelled]
           example: "pending"
-        shippingAddress:
-          type: object
-          properties:
-            street:
-              type: string
-              example: "123 Main St"
-            city:
-              type: string
-              example: "New York"
-            state:
-              type: string
-              example: "NY"
-            zipCode:
-              type: string
-              example: "10001"
-            country:
-              type: string
-              example: "USA"
-        buyerNotes:
+        shipping_address:
           type: string
-          example: "Palun toimetage pärast kella 17"
-        createdAt:
+          example: "Tallinna tn 1, Tallinn, Eesti"
+        created_at:
           type: string
           format: date-time
-          example: "2023-06-15T09:33:48.250Z"
-        updatedAt:
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
           type: string
           format: date-time
-          example: "2023-06-15T09:34:43.423Z"
-        cancelledAt:
-          type: string
-          format: date-time
-          example: "2023-06-15T09:32:09.103Z"
-        cancelReason:
-          type: string
-          example: "Muutsin meelt"
+          example: "2024-01-15T10:30:00Z"
     OrderCreate:
       type: object
       required:
-        - listingId
+        - listing_id
         - quantity
-        - shippingAddress
+        - shipping_address
       properties:
-        listingId:
+        listing_id:
           type: integer
-          example: 10
+          example: 1
         quantity:
           type: integer
-          example: 2
-        shippingAddress:
-          type: object
-          required:
-            - street
-            - city
-            - country
-          properties:
-            street:
-              type: string
-              example: "123 Main St"
-            city:
-              type: string
-              example: "New York"
-            state:
-              type: string
-              example: "NY"
-            zipCode:
-              type: string
-              example: "10001"
-            country:
-              type: string
-              example: "USA"
-        buyerNotes:
+          example: 1
+        shipping_address:
           type: string
-          example: "Palun toimetage pärast kella 17"
+          example: "Tallinna tn 1, Tallinn, Eesti"
     OrderUpdate:
       type: object
       properties:
-        userId:
-          type: integer
-          example: 2
-        listingId:
-          type: integer
-          example: 20
         quantity:
           type: integer
-          example: 5
-        totalPrice:
-          type: number
-          example: 500.0
-    Success:
-      type: object
-      properties:
-        message:
+          example: 2
+        status:
           type: string
-          example: "Operation successful"
+          enum: [pending, confirmed, shipped, delivered, cancelled]
+          example: "confirmed"
+        shipping_address:
+          type: string
+          example: "Tartu tn 1, Tartu, Eesti"
     Error:
       type: object
       properties:
         error:
           type: string
-          example: "All fields are required"
+          example: "Kõik väljad on kohustuslikud"
         code:
           type: string
           example: "VALIDATION_ERROR"
         details:
           type: object
-          example: { "field": "email", "message": "Email is required" }
+          example: { "field": "email", "message": "E-post on kohustuslik" }
+    Success:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Toiming õnnestus"
