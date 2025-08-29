@@ -291,6 +291,13 @@ exports.updateListing = (req, res) => {
     const listingIndex = listings.findIndex(l => l.id === listingId);
 
     if (listingIndex !== -1) {
+        // Check ownership
+        if (listings[listingIndex].userId !== req.user.id) {
+            return res.status(403).json({
+                error: 'You can only edit your own listings'
+            });
+        }
+
         // Update existing listing
         const existingImages = listings[listingIndex].images || [];
 
@@ -310,8 +317,15 @@ exports.updateListing = (req, res) => {
         return res.status(200).json(listings[listingIndex]);
     }
 
-    // If it's a mock listing (ID 1 or 2), create updated version
+    // If it's a mock listing (ID 1 or 2), check ownership for mock data
     if (listingId === 1 || listingId === 2) {
+        // For mock listings, only allow updates if user owns them (assuming mock listings belong to user 1)
+        if (req.user.id !== 1) {
+            return res.status(403).json({
+                error: 'You can only edit your own listings'
+            });
+        }
+
         const updatedListing = {
             id: listingId,
             title: title || (listingId === 1 ? "iPhone 14 Pro" : "Gaming Laptop RTX 4070"),
@@ -342,6 +356,13 @@ exports.deleteListing = (req, res) => {
     const listingIndex = listings.findIndex(l => l.id === listingId);
 
     if (listingIndex !== -1) {
+        // Check ownership
+        if (listings[listingIndex].userId !== req.user.id) {
+            return res.status(403).json({
+                error: 'You can only delete your own listings'
+            });
+        }
+
         const deletedListing = listings.splice(listingIndex, 1)[0];
         console.log('✅ Listing deleted:', deletedListing.title);
         return res.status(200).json({
@@ -350,8 +371,14 @@ exports.deleteListing = (req, res) => {
         });
     }
 
-    // Mock listings cannot be deleted, but return success
+    // Mock listings - check ownership
     if (listingId === 1 || listingId === 2) {
+        if (req.user.id !== 1) {
+            return res.status(403).json({
+                error: 'You can only delete your own listings'
+            });
+        }
+        
         console.log('⚠️ Attempting to delete mock listing:', listingId);
         return res.status(200).json({
             message: `Mock listing ${listingId} cannot be deleted`,
