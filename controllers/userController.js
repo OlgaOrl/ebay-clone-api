@@ -114,42 +114,42 @@ exports.updateUser = (req, res) => {
         updatedAt: new Date()
     };
 
-    console.log('✅ Пользователь обновлен:', users[userIndex]);
+    console.log('✅ User updated:', users[userIndex]);
 
     return res.status(200).json({
         id: users[userIndex].id,
         username: users[userIndex].username,
         email: users[userIndex].email,
-        message: 'Профиль успешно обновлен'
+        message: 'Profile successfully updated'
     });
 };
 
 exports.deleteUser = (req, res) => {
     const userId = parseInt(req.params.id);
-    console.log('🗑️ Удаление пользователя:', userId);
+    console.log('🗑️ Deleting user:', userId);
 
     const userIndex = users.findIndex(u => u.id === userId);
 
     if (userIndex === -1) {
         return res.status(404).json({
-            error: 'Пользователь не найден'
+            error: 'User not found'
         });
     }
 
     users.splice(userIndex, 1);
-    console.log('✅ Пользователь удален');
+    console.log('✅ User deleted');
 
     return res.status(204).end();
 };
 
 exports.logout = (req, res) => {
-    console.log('👋 Выход из системы');
+    console.log('👋 Logging out');
     return res.status(204).end();
 };
 
-// Вспомогательные функции
+// Helper functions
 function hashPassword(password) {
-    return password; // Замените на bcrypt в продакшене
+    return password; // Replace with bcrypt in production
 }
 
 function verifyPassword(inputPassword, storedPassword) {

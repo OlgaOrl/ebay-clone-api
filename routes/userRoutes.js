@@ -3,10 +3,10 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-router.post('/', userController.createUser);        // Регистрация
-router.get('/:id', userController.getUser);         // Получение пользователя
-router.patch('/:id', authMiddleware, userController.updateUser);    // Обновление пользователя (PATCH вместо PUT)
-router.put('/:id', authMiddleware, userController.updateUser);      // Дублируем для совместимости
-router.delete('/:id', authMiddleware, userController.deleteUser);   // Удаление пользователя
+router.post('/', userController.createUser);        // User registration
+router.get('/:id', userController.getUser);         // Get user
+router.patch('/:id', authMiddleware, userController.updateUser);    // Update user (PATCH instead of PUT)
+router.put('/:id', authMiddleware, userController.updateUser);      // Duplicate for compatibility
+router.delete('/:id', authMiddleware, userController.deleteUser);   // Delete user
 
 module.exports = router;
