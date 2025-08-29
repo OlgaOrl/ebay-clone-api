@@ -12,6 +12,7 @@ const corsMiddleware = cors({
     origin: [
         'https://olga-orlova.me',
         'https://ebayclone.olga-orlova.me',
+        'https://ebayclonefrontend.olga-orlova.me',
         'http://localhost:3000',
         'http://localhost:5173'
     ],
