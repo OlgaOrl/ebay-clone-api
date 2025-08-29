@@ -43,54 +43,67 @@ const getAllOrders = (req, res) => {
 const createOrder = (req, res) => {
     console.log('🛒 Creating order:', req.body);
 
-    const { listingId, quantity, shippingAddress } = req.body;
+    try {
+        const { listingId, quantity, shippingAddress } = req.body;
 
-    // Validation
-    if (!listingId || !quantity || !shippingAddress) {
-        return res.status(400).json({
-            error: 'Listing ID, quantity, and shipping address are required'
+        // Validation
+        if (!listingId || !quantity || !shippingAddress) {
+            return res.status(400).json({
+                error: 'Listing ID, quantity, and shipping address are required'
+            });
+        }
+
+        if (!shippingAddress.street || !shippingAddress.city || !shippingAddress.country) {
+            return res.status(400).json({
+                error: 'Shipping address must include street, city, and country'
+            });
+        }
+
+        if (quantity < 1) {
+            return res.status(400).json({
+                error: 'Quantity must be at least 1'
+            });
+        }
+
+        // Mock price calculation (in real app, get from database)
+        const mockPrices = { 1: 150, 2: 1200, 3: 1450 };
+        const unitPrice = mockPrices[listingId] || 100;
+        const totalPrice = unitPrice * quantity;
+
+        const newOrder = {
+            id: orderIdCounter++,
+            userId: req.user?.id || 1,
+            listingId: parseInt(listingId),
+            quantity: parseInt(quantity),
+            totalPrice: totalPrice,
+            status: 'pending',
+            shippingAddress: {
+                street: shippingAddress.street,
+                city: shippingAddress.city,
+                state: shippingAddress.state || '',
+                zipCode: shippingAddress.zipCode || '',
+                country: shippingAddress.country || 'Estonia'
+            },
+            buyerNotes: req.body.buyerNotes || '',
+            createdAt: new Date().toISOString()
+        };
+
+        orders.push(newOrder);
+        console.log('✅ Order created:', newOrder);
+
+        return res.status(201).json({
+            id: newOrder.id,
+            message: "Order created successfully",
+            order: newOrder
+        });
+
+    } catch (error) {
+        console.error('❌ Error creating order:', error);
+        return res.status(500).json({
+            error: 'Failed to create order',
+            message: error.message
         });
     }
-
-    if (!shippingAddress.street || !shippingAddress.city || !shippingAddress.country) {
-        return res.status(400).json({
-            error: 'Shipping address must include street, city, and country'
-        });
-    }
-
-    if (quantity < 1) {
-        return res.status(400).json({
-            error: 'Quantity must be at least 1'
-        });
-    }
-
-    // Mock price calculation (in real app, get from database)
-    const mockPrices = { 1: 150, 2: 1200, 3: 1450 };
-    const unitPrice = mockPrices[listingId] || 100;
-    const totalPrice = unitPrice * quantity;
-
-    const newOrder = {
-        id: orderIdCounter++,
-        userId: req.user?.id || 1,
-        listingId: parseInt(listingId),
-        quantity: parseInt(quantity),
-        totalPrice: totalPrice,
-        status: 'pending',
-        shippingAddress: {
-            street: shippingAddress.street,
-            city: shippingAddress.city,
-            state: shippingAddress.state || '',
-            zipCode: shippingAddress.zipCode || '',
-            country: shippingAddress.country || 'Estonia'
-        },
-        buyerNotes: req.body.buyerNotes || '',
-        createdAt: new Date().toISOString()
-    };
-
-    orders.push(newOrder);
-    console.log('✅ Order created:', newOrder);
-
-    return res.status(201).json(newOrder);
 };
 
 // Get order by ID
