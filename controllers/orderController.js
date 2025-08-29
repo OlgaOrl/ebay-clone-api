@@ -78,28 +78,29 @@ const createOrder = (req, res) => {
             totalPrice: totalPrice,
             status: 'pending',
             shippingAddress: {
-                street: shippingAddress.street,
-                city: shippingAddress.city,
-                state: shippingAddress.state || '',
-                zipCode: shippingAddress.zipCode || '',
-                country: shippingAddress.country || 'Estonia'
+                street: String(shippingAddress.street),
+                city: String(shippingAddress.city),
+                state: String(shippingAddress.state || ''),
+                zipCode: String(shippingAddress.zipCode || ''),
+                country: String(shippingAddress.country || 'Estonia')
             },
-            buyerNotes: req.body.buyerNotes || '',
+            buyerNotes: String(req.body.buyerNotes || ''),
             createdAt: new Date().toISOString()
         };
 
         orders.push(newOrder);
-        console.log('✅ Order created:', newOrder);
+        console.log('✅ Order created successfully:', newOrder.id);
 
         return res.status(201).json({
-            id: newOrder.id,
-            message: "Order created successfully",
-            order: newOrder
+            success: true,
+            order: newOrder,
+            message: "Order created successfully"
         });
 
     } catch (error) {
         console.error('❌ Error creating order:', error);
         return res.status(500).json({
+            success: false,
             error: 'Failed to create order',
             message: error.message
         });
