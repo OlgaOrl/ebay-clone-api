@@ -8,10 +8,23 @@ exports.createListing = (req, res) => {
 
     const { title, description, price, category, condition, location } = req.body;
 
-    // Validation
+    // Validation for required fields
     if (!title || !description || !price) {
+        const missingFields = [];
+        if (!title) missingFields.push('title');
+        if (!description) missingFields.push('description');
+        if (!price) missingFields.push('price');
+        
         return res.status(400).json({
-            error: 'Title, description and price are required'
+            error: `${missingFields.join(', ')} ${missingFields.length === 1 ? 'is' : 'are'} required`
+        });
+    }
+
+    // Validate price is a positive number
+    const parsedPrice = parseFloat(price);
+    if (isNaN(parsedPrice) || parsedPrice <= 0) {
+        return res.status(400).json({
+            error: 'Price must be a positive number'
         });
     }
 
@@ -31,7 +44,7 @@ exports.createListing = (req, res) => {
         id: listings.length + 3, // +3 to avoid conflicts with mock data
         title,
         description,
-        price: parseFloat(price),
+        price: parsedPrice,
         category: category || 'Other',
         condition: condition || 'Used',
         location: location || 'Not specified',
