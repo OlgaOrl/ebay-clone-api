@@ -44,7 +44,7 @@ const createOrder = (req, res) => {
     console.log('🛒 Creating order:', req.body);
 
     try {
-        const { listingId, quantity, shippingAddress } = req.body;
+        const { listingId, quantity, shippingAddress, fullName } = req.body;
 
         // Validation
         if (!listingId || !quantity || !shippingAddress) {
@@ -53,9 +53,17 @@ const createOrder = (req, res) => {
             });
         }
 
+        // Updated validation to match frontend structure
         if (!shippingAddress.street || !shippingAddress.city || !shippingAddress.country) {
             return res.status(400).json({
                 error: 'Shipping address must include street, city, and country'
+            });
+        }
+
+        // Validate fullName if provided
+        if (fullName && (!fullName.trim() || fullName.trim().length < 2)) {
+            return res.status(400).json({
+                error: 'Full name must be at least 2 characters long'
             });
         }
 
@@ -77,12 +85,13 @@ const createOrder = (req, res) => {
             quantity: parseInt(quantity),
             totalPrice: totalPrice,
             status: 'pending',
+            fullName: fullName ? String(fullName).trim() : '',
             shippingAddress: {
-                street: String(shippingAddress.street),
-                city: String(shippingAddress.city),
-                state: String(shippingAddress.state || ''),
-                zipCode: String(shippingAddress.zipCode || ''),
-                country: String(shippingAddress.country || 'Estonia')
+                street: String(shippingAddress.street).trim(),
+                city: String(shippingAddress.city).trim(),
+                state: String(shippingAddress.state || '').trim(),
+                zipCode: String(shippingAddress.zipCode || '').trim(),
+                country: String(shippingAddress.country).trim()
             },
             buyerNotes: String(req.body.buyerNotes || ''),
             createdAt: new Date().toISOString()
